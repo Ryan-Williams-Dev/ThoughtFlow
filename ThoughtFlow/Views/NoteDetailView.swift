@@ -62,7 +62,15 @@ struct NoteDetailView: View {
                 Button {
                     print("Share")
                 } label: {
-                    Label("Share", systemImage: "square.and.arrow.up")
+                    Label("AI Tools", systemImage: "square.and.arrow.up")
+                }
+            }
+            ToolbarSpacer()
+            ToolbarItem {
+                Button {
+                    print("Taps Forehead")
+                } label: {
+                    Label("Done", systemImage: "apple.intelligence")
                 }
             }
             ToolbarItem {
@@ -90,6 +98,13 @@ struct NoteDetailView: View {
                     Button("Cancel", role: .cancel) {
                         print("Survived to see another day...")
                     }
+                }
+            }
+            ToolbarItem(placement: .keyboard) {
+                Button {
+                    print("Keyboard")
+                } label: {
+                    Text("Done")
                 }
             }
         }
