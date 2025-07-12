@@ -50,7 +50,6 @@ struct NoteDetailView: View {
                         Label("Save", systemImage: "checkmark.circle")
                     }
                 }
-                .padding()
                 .background(.ultraThinMaterial)
                 .transition(.opacity)
             }
@@ -87,6 +86,7 @@ struct NoteDetailView: View {
                 } label: {
                     Label("Delete", systemImage: "trash")
                 }
+                .tint(.red)
                 .confirmationDialog(
                     "Are you sure you want to delete this note?",
                     isPresented: $showDeleteConfirmation,
@@ -100,13 +100,6 @@ struct NoteDetailView: View {
                     }
                 }
             }
-            ToolbarItem(placement: .keyboard) {
-                Button {
-                    print("Keyboard")
-                } label: {
-                    Text("Done")
-                }
-            }
         }
         .onAppear {
             draftText = note.text
@@ -115,6 +108,8 @@ struct NoteDetailView: View {
     }
 }
 
-//#Preview {
-//    NoteDetailView()
-//}
+#Preview {
+    let previewNote = Note(text: "This is a sample note for previewing!\nAdd more lines as needed.", createdAt: Date())
+    return NoteDetailView(note: previewNote)
+        .modelContainer(for: Note.self, inMemory: true)
+}

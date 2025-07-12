@@ -15,7 +15,7 @@ struct ContentView: View {
         TabView {
             CaptureView()
                 .tabItem { Label("Capture", systemImage: "mic.fill") }
-
+            
             NotesListView()
                 .tabItem { Label("Notes", systemImage: "note.text") }
 
@@ -24,6 +24,13 @@ struct ContentView: View {
 
             SettingsView()
                 .tabItem { Label("Settings", systemImage: "gear") }
+        }
+        .tabViewBottomAccessory {
+            Group {
+                Button("Record new message") {
+                    print("recording")
+                }
+            }
         }
         .tabBarMinimizeBehavior(.onScrollDown)
     }

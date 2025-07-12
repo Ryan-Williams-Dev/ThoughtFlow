@@ -70,19 +70,22 @@ struct CaptureView: View {
                     } else {
                         Image(
                             systemName: isRecording
-                                ? "stop.circle.fill" : "mic.circle.fill"
+                                ? "stop.fill" : "mic.fill"
                         )
                         .resizable()
                         .scaledToFit()
                         .frame(width: 100, height: 100)
                         .foregroundStyle(isRecording ? .red : .primary)
+                        .padding()
                     }
                 }
             }
             .disabled(isProcessing)
             .padding(.bottom)
+//            .buttonStyle(.glass)
+            .glassEffect(.regular.interactive())
         }
-        .padding()
+        .scenePadding()
         .onReceive(timer) { _ in updateTimer() }
 
     }

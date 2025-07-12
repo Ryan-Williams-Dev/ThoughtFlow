@@ -32,16 +32,32 @@ struct NotesListView: View {
             }
             .navigationTitle("Notes")
             .toolbar {
-                EditButton()
+                EditButton().glassEffect()
             }
+            
         } detail: {
-            if let note = selectedNote {
-                NoteDetailView(note: note)
-            } else {
-                ContentUnavailableView("Select a Note", systemImage: "note.text")
+            Group {
+                if let note = selectedNote {
+                    NoteDetailView(note: note)
+                } else {
+                    ContentUnavailableView("Select a Note", systemImage: "note.text")
+                }
             }
+            // Give it an “editor” role so bottomBar is positioned correctly
+            .toolbarRole(.editor)
+            .toolbar {
+                // these buttons only appear in your detail view
+                ToolbarItemGroup(placement: .keyboard) {
+                    Button() {
+                        print("yip")
+                    } label: {
+                        Label("Summarize", systemImage: "apple.intelligence")
+                    }
+                }
+            }
+            
         }
-    }
+}
 
     private func deleteNotes(at offsets: IndexSet) {
         for index in offsets {
@@ -51,5 +67,12 @@ struct NotesListView: View {
 }
 
 #Preview {
-    NotesListView()
+    let container = try! ModelContainer(for: Note.self)
+    let context = container.mainContext
+    // Add dummy notes
+    context.insert(Note(text: "Sample Note 1\nThis is the body of note 1.", createdAt: .now))
+    context.insert(Note(text: "Second note body goes here.", createdAt: .now.addingTimeInterval(-3600)))
+    
+    return NotesListView()
+        .modelContainer(container)
 }
