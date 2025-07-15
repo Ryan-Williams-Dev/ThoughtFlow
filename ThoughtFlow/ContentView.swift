@@ -5,32 +5,41 @@
 //  Created by Ryan Williams on 2025-07-09.
 //
 
-import SwiftUI
 import SwiftData
+import SwiftUI
+
+enum Tabs {
+    case home
+    case notes
+    case settings
+    case search
+}
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @StateObject private var speechService = SpeechService()
+    
+    @State var selectedTab: Tabs = .notes
+    @State var searchText: String = ""
 
     var body: some View {
-        TabView {
-            CaptureView()
-                .tabItem { Label("Capture", systemImage: "mic.fill") }
+        TabView(selection: $selectedTab) {
+            Tab("Notes", systemImage: "note.text", value: Tabs.notes, role: nil) {
+                NotesListView()
+            }
+
+            Tab("Settings", systemImage: "gear", value: Tabs.settings, role: nil) {
+                SettingsView()
+            }
             
-            NotesListView()
-                .tabItem { Label("Notes", systemImage: "note.text") }
-
-            TasksView()
-                .tabItem { Label("Tasks", systemImage: "checkmark.square") }
-
-            SettingsView()
-                .tabItem { Label("Settings", systemImage: "gear") }
+            Tab(value: Tabs.search, role: .search) {
+                NotesListView()
+            }
         }
         .tabViewBottomAccessory {
-            Group {
-                Button("Record new message") {
-                    print("recording")
-                }
-            }
+            RecordingButton(
+                speechService: speechService,
+            )
         }
         .tabBarMinimizeBehavior(.onScrollDown)
     }
