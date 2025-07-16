@@ -10,7 +10,7 @@ import SwiftUI
 
 enum Tabs {
     case home
-    case notes
+    case insights
     case settings
     case search
 }
@@ -19,12 +19,16 @@ struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @StateObject private var speechService = SpeechService()
     
-    @State var selectedTab: Tabs = .notes
+    @State var selectedTab: Tabs = .home
     @State var searchText: String = ""
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            Tab("Notes", systemImage: "note.text", value: Tabs.notes, role: nil) {
+            Tab("Home", systemImage: "house", value: Tabs.home, role: nil) {
+                NotesListView()
+            }
+            
+            Tab("Insights", systemImage: "atom", value: Tabs.insights) {
                 NotesListView()
             }
 
@@ -37,9 +41,10 @@ struct ContentView: View {
             }
         }
         .tabViewBottomAccessory {
-            RecordingButton(
-                speechService: speechService,
-            )
+//            RecordingButton(
+//                speechService: speechService,
+//            )
+            RecordButton()
         }
         .tabBarMinimizeBehavior(.onScrollDown)
     }
