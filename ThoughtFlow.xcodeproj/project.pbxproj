@@ -6,6 +6,11 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		4E72EA272E29726300C4733D /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4E72EA262E29726300C4733D /* WhisperKit */; };
+		4E72EA292E29726300C4733D /* whisperkit-cli in Frameworks */ = {isa = PBXBuildFile; productRef = 4E72EA282E29726300C4733D /* whisperkit-cli */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		4EC2D1652E1F082D008E792A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -52,6 +57,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4E72EA272E29726300C4733D /* WhisperKit in Frameworks */,
+				4E72EA292E29726300C4733D /* whisperkit-cli in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -112,6 +119,8 @@
 			);
 			name = ThoughtFlow;
 			packageProductDependencies = (
+				4E72EA262E29726300C4733D /* WhisperKit */,
+				4E72EA282E29726300C4733D /* whisperkit-cli */,
 			);
 			productName = ThoughtFlow;
 			productReference = 4EC2D1552E1F082C008E792A /* ThoughtFlow.app */;
@@ -195,6 +204,9 @@
 			);
 			mainGroup = 4EC2D14C2E1F082C008E792A;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				4E72EA252E29726300C4733D /* XCRemoteSwiftPackageReference "whisperkit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 4EC2D1562E1F082C008E792A /* Products */;
 			projectDirPath = "";
@@ -582,6 +594,30 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		4E72EA252E29726300C4733D /* XCRemoteSwiftPackageReference "whisperkit" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/argmaxinc/whisperkit";
+			requirement = {
+				branch = main;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		4E72EA262E29726300C4733D /* WhisperKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E72EA252E29726300C4733D /* XCRemoteSwiftPackageReference "whisperkit" */;
+			productName = WhisperKit;
+		};
+		4E72EA282E29726300C4733D /* whisperkit-cli */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 4E72EA252E29726300C4733D /* XCRemoteSwiftPackageReference "whisperkit" */;
+			productName = "whisperkit-cli";
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 4EC2D14D2E1F082C008E792A /* Project object */;
 }

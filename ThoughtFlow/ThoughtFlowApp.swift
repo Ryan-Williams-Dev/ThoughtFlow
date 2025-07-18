@@ -22,10 +22,13 @@ struct ThoughtFlowApp: App {
             fatalError("Could not create ModelContainer: \(error)")
         }
     }()
+    
+    @StateObject private var audioRecorder = AudioRecorder()
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environmentObject(audioRecorder)
         }
         .modelContainer(sharedModelContainer)
     }

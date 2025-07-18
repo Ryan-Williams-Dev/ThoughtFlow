@@ -7,8 +7,13 @@
 
 import Combine
 import SwiftUI
+import WhisperKit
+import SwiftData
 
 struct RecordButton: View {
+    @EnvironmentObject var audioRecorder: AudioRecorder
+    @StateObject var transcriptionService = TranscriptionService()
+    @Environment(\.modelContext) private var modelContext
 
     @State private var isRecording = false
     @State private var isProcessing = false
@@ -105,8 +110,13 @@ struct RecordButton: View {
     }
 
     private func startRecording() {
-        isRecording = true
-        triggerInitialPressHaptic()
+        do {
+            try audioRecorder.startRecording()
+            isRecording = true
+            triggerInitialPressHaptic()
+        } catch {
+            print("Recording failed to start: \(error.localizedDescription)")
+        }
     }
 
     private func endRecording() {
@@ -114,22 +124,49 @@ struct RecordButton: View {
         isLockedOn = false
         isProcessing = true
 
-        DispatchQueue.main.asyncAfter(
-            deadline: .now() + 2,
-            execute: {
-                self.isProcessing = false
-                self.isSuccess = true
-                triggerSuccessHaptic()
+        Task {
+            do {
+                let audioURL = try audioRecorder.stopRecording()
+                try await transcribeAndSave(from: audioURL)
 
-                DispatchQueue.main.asyncAfter(
-                    deadline: .now() + 2,
-                    execute: {
-                        self.isSuccess = false
-                    }
-                )
+                await MainActor.run {
+                    isProcessing = false
+                    isSuccess = true
+                    triggerSuccessHaptic()
+                }
+
+                DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                    isSuccess = false
+                }
+
+            } catch {
+                await MainActor.run {
+                    isProcessing = false
+                    print("Recording/transcription/save error: \(error)")
+                }
             }
-        )
+        }
+    }
+    
+    private func transcribeAndSave(from audioURL: URL) async throws {
+        // 1. Transcribe & await the returned String
+        let transcript = try await transcriptionService.transcribe(audioURL: audioURL)
+        
+        // 2. Make sure we actually got something
+        guard !transcript.isEmpty else {
+            throw NSError(
+                domain: "Transcription",
+                code: 0,
+                userInfo: [NSLocalizedDescriptionKey: "Transcript was empty."]
+            )
+        }
 
+        // 3. Create & insert your SwiftData Note
+        let note = Note(text: transcript)
+        modelContext.insert(note)
+        
+        // 4. Persist the change
+        try modelContext.save()
     }
 
     private func lockRecording() {
