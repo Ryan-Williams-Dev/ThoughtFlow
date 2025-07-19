@@ -22,7 +22,7 @@ enum RecordingError: LocalizedError {
     }
 }
 
-class AudioRecorder: NSObject, ObservableObject {
+final class AudioRecorder: NSObject, ObservableObject, RecordingServiceProtocol {
     private var recorder: AVAudioRecorder?
     private(set) var audioURL: URL?
 

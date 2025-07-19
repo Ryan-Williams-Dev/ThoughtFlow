@@ -16,52 +16,66 @@ struct NotesListView: View {
     var body: some View {
         NavigationSplitView {
             List(selection: $selectedNote) {
-                ForEach(notes) { note in
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(note.title)
-                            .font(.headline)
-                            .lineLimit(1)
-                        Text(note.createdAt.formatted(date: .abbreviated, time: .shortened))
-                            .font(.caption)
-                            .foregroundColor(.gray)
+                ForEach(sortedDates, id: \.self) { date in
+                    let notesForDate = groupedNotes[date] ?? []
+                    let dateString = date.formatted(date: .complete, time: .omitted)
+                    
+                    DisclosureGroup(dateString) {
+                        ForEach(notesForDate) { note in
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(note.title)
+                                    .font(.headline)
+                                    .lineLimit(1)
+                                Text(note.createdAt.formatted(date: .omitted, time: .shortened))
+                                    .font(.caption)
+                                    .foregroundColor(.gray)
+                            }
+                            .padding(.vertical, 4)
+                            .tag(note)
+                            .swipeActions(edge: .trailing) {
+                                Button("Delete", role: .destructive) {
+                                    deleteNote(note)
+                                }
+                            }
+                        }
                     }
-                    .padding(.vertical, 4)
-                    .tag(note)
                 }
-                .onDelete(perform: deleteNotes)
             }
             .navigationTitle("Notes")
-            .toolbar {
-                EditButton().glassEffect()
-            }
-            
         } detail: {
             Group {
                 if let note = selectedNote {
-                    NoteDetailView(note: note)
+                    NoteDetailView(note: note, onDelete: { deleteNote(selectedNote) })
                 } else {
                     ContentUnavailableView("Select a Note", systemImage: "note.text")
                 }
             }
-            // Give it an “editor” role so bottomBar is positioned correctly
-            .toolbarRole(.editor)
-            .toolbar {
-                // these buttons only appear in your detail view
-                ToolbarItemGroup(placement: .keyboard) {
-                    Button() {
-                        print("yip")
-                    } label: {
-                        Label("Summarize", systemImage: "apple.intelligence")
-                    }
-                }
-            }
-            
         }
-}
-
-    private func deleteNotes(at offsets: IndexSet) {
-        for index in offsets {
-            modelContext.delete(notes[index])
+    }
+    
+    // Group notes by date
+    private var groupedNotes: [Date: [Note]] {
+        Dictionary(grouping: notes) { note in
+            Calendar.current.startOfDay(for: note.createdAt)
+        }
+    }
+    
+    private var sortedDates: [Date] {
+        groupedNotes.keys.sorted(by: >)
+    }
+    
+    private func deleteNote(_ note: Note?) {
+        guard let note else { return }
+        modelContext.delete(note)
+        if selectedNote?.id == note.id {
+            selectedNote = nil
+        }
+    }
+    
+    private func deleteNote(_ note: Note) {
+        modelContext.delete(note)
+        if selectedNote?.id == note.id {
+            selectedNote = nil
         }
     }
 }
@@ -69,9 +83,13 @@ struct NotesListView: View {
 #Preview {
     let container = try! ModelContainer(for: Note.self)
     let context = container.mainContext
-    // Add dummy notes
+    
+    // Add dummy notes with different dates
     context.insert(Note(text: "Sample Note 1\nThis is the body of note 1.", createdAt: .now))
-    context.insert(Note(text: "Second note body goes here.", createdAt: .now.addingTimeInterval(-3600)))
+    context.insert(Note(text: "Second note from today.", createdAt: .now.addingTimeInterval(-3600)))
+    context.insert(Note(text: "Yesterday's note\nContent from yesterday.", createdAt: .now.addingTimeInterval(-86400)))
+    context.insert(Note(text: "Another yesterday note.", createdAt: .now.addingTimeInterval(-90000)))
+    context.insert(Note(text: "Note from two days ago.", createdAt: .now.addingTimeInterval(-172800)))
     
     return NotesListView()
         .modelContainer(container)

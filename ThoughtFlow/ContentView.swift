@@ -15,24 +15,28 @@ enum Tabs {
     case search
 }
 
+// ContentView.swift
+
+import SwiftData
+import SwiftUI
+
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @StateObject private var speechService = SpeechService()
-    
+
     @State var selectedTab: Tabs = .home
     @State var searchText: String = ""
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            Tab("Home", systemImage: "house", value: Tabs.home, role: nil) {
+            Tab("Home", systemImage: "house", value: Tabs.home) {
                 NotesListView()
             }
             
             Tab("Insights", systemImage: "atom", value: Tabs.insights) {
-                NotesListView()
+                Insights()
             }
 
-            Tab("Settings", systemImage: "gear", value: Tabs.settings, role: nil) {
+            Tab("Settings", systemImage: "gear", value: Tabs.settings) {
                 SettingsView()
             }
             
@@ -41,10 +45,13 @@ struct ContentView: View {
             }
         }
         .tabViewBottomAccessory {
-//            RecordingButton(
-//                speechService: speechService,
-//            )
-            RecordButton()
+            RecordButton(
+                vm: .init(
+                    recorder: AudioRecorder(),
+                    transcriber: TranscriptionService(),
+                    notesRepo: NoteRepository(modelContext: modelContext)
+                )
+            )
         }
         .tabBarMinimizeBehavior(.onScrollDown)
     }
@@ -54,3 +61,4 @@ struct ContentView: View {
     ContentView()
         .modelContainer(for: Note.self, inMemory: true)
 }
+

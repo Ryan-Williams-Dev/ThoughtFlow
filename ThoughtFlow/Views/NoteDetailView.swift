@@ -11,76 +11,23 @@ import SwiftUI
 struct NoteDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    @Bindable var note: Note
+    var note: Note
+    let onDelete: () -> Void
 
-    @State private var draftText: String = ""
-    @State private var hasChanges: Bool = false
     @State private var showDeleteConfirmation = false
 
     var body: some View {
-        VStack {
-            TextEditor(text: $draftText)
-                .padding()
+        ScrollView {
+            Text(note.text)
                 .font(.body)
-                .scrollContentBackground(.hidden)
-                .background(Color(.secondarySystemBackground))
-                .cornerRadius(16)
-                .padding(.horizontal)
-                .onChange(of: draftText) {
-                    hasChanges = draftText != note.text
-                }
-
-            Spacer()
-
-            if hasChanges {
-                HStack {
-                    Button(role: .cancel) {
-                        draftText = note.text
-                        hasChanges = false
-                    } label: {
-                        Label("Discard", systemImage: "xmark.circle")
-                    }
-
-                    Spacer()
-
-                    Button {
-                        note.text = draftText
-                        hasChanges = false
-                    } label: {
-                        Label("Save", systemImage: "checkmark.circle")
-                    }
-                }
-                .background(.ultraThinMaterial)
-                .transition(.opacity)
-            }
+                .padding()
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .textSelection(.enabled)
         }
         .navigationTitle(note.createdAt.formatted(date: .abbreviated, time: .omitted))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem {
-                Button {
-                    print("Share")
-                } label: {
-                    Label("AI Tools", systemImage: "square.and.arrow.up")
-                }
-            }
-            ToolbarSpacer()
-            ToolbarItem {
-                Button {
-                    print("Taps Forehead")
-                } label: {
-                    Label("Done", systemImage: "apple.intelligence")
-                }
-            }
-            ToolbarItem {
-                Button {
-                    print("Edit")
-                } label: {
-                    Label("Edit", systemImage: "pencil")
-                }
-            }
-            ToolbarSpacer()
-            ToolbarItem {
+            ToolbarItem(placement: .navigationBarTrailing) {
                 Button(role: .destructive) {
                     showDeleteConfirmation = true
                 } label: {
@@ -93,23 +40,17 @@ struct NoteDetailView: View {
                     titleVisibility: .visible
                 ) {
                     Button("Delete Note", role: .destructive) {
-                        modelContext.delete(note)
+                        onDelete()
                     }
-                    Button("Cancel", role: .cancel) {
-                        print("Survived to see another day...")
-                    }
+                    Button("Cancel", role: .cancel) { }
                 }
             }
         }
-        .onAppear {
-            draftText = note.text
-        }
-
     }
 }
 
 #Preview {
     let previewNote = Note(text: "This is a sample note for previewing!\nAdd more lines as needed.", createdAt: Date())
-    return NoteDetailView(note: previewNote)
+    NoteDetailView(note: previewNote, onDelete: {})
         .modelContainer(for: Note.self, inMemory: true)
 }
