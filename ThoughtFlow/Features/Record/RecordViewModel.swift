@@ -5,9 +5,9 @@
 //  Created by Ryan Williams on 2025-07-19.
 //
 
+import Combine
 import Foundation
 import SwiftUI
-import Combine
 
 @MainActor
 class RecordViewModel: ObservableObject {
@@ -17,20 +17,30 @@ class RecordViewModel: ObservableObject {
     @Published var dragOffset: CGFloat = 0
     @Published var isProcessing = false
     @Published var isSuccess = false
+    @Published var isModelLoaded = false
 
     // MARK: - Injected Services
     private let recorder: RecordingServiceProtocol
     private let transcriber: TranscriptionServiceProtocol
     private let notesRepo: NoteRepositoryProtocol
-
+    
+    private var cancellables = Set<AnyCancellable>()
+    
     init(
         recorder: RecordingServiceProtocol,
         transcriber: TranscriptionServiceProtocol,
         notesRepo: NoteRepositoryProtocol
     ) {
-        self.recorder    = recorder
+        self.recorder = recorder
         self.transcriber = transcriber
-        self.notesRepo   = notesRepo
+        self.notesRepo = notesRepo
+
+        if let transcriptionService = transcriber as? TranscriptionService {
+            transcriptionService.$isModelLoaded
+                .receive(on: DispatchQueue.main)
+                .assign(to: \.isModelLoaded, on: self)
+                .store(in: &cancellables)
+        }
     }
 
     // MARK: - Public Intents
@@ -42,7 +52,7 @@ class RecordViewModel: ObservableObject {
                 await startRecording()
             }
         }
-        
+
         if translation > lockThreshold && !isLockedOn
             && dragOffset <= lockThreshold
         {
@@ -56,6 +66,8 @@ class RecordViewModel: ObservableObject {
     }
 
     func handleDragEnded(_ translation: CGFloat, lockThreshold: CGFloat) {
+        guard isModelLoaded else { return }
+        
         Task {
             if isRecording {
                 if isLockedOn && translation <= lockThreshold {
@@ -96,7 +108,13 @@ class RecordViewModel: ObservableObject {
 
         do {
             let url = try await Task.detached { [weak self] in
-                guard let self = self else { throw NSError(domain: "RecordViewModel", code: -1, userInfo: nil) }
+                guard let self = self else {
+                    throw NSError(
+                        domain: "RecordViewModel",
+                        code: -1,
+                        userInfo: nil
+                    )
+                }
                 return try await self.recorder.stopRecording()
             }.value
 
@@ -138,4 +156,3 @@ class RecordViewModel: ObservableObject {
         UINotificationFeedbackGenerator().notificationOccurred(.success)
     }
 }
-

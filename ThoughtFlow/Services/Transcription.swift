@@ -10,8 +10,38 @@ import WhisperKit
 import Combine
 
 class TranscriptionService: ObservableObject, TranscriptionServiceProtocol {
+    private var whisperKit: WhisperKit?
+    @Published var isModelLoaded = false
+    
+    var config = WhisperKitConfig(
+        model: "medium.en"
+    )
+    
+    init() {
+        Task {
+            await preloadModel()
+        }
+    }
+    
+    private func preloadModel() async {
+        do {
+            let whisperKit = try await WhisperKit(config)
+            await MainActor.run {
+                self.whisperKit = whisperKit
+                self.isModelLoaded = true
+            }
+        } catch {
+            print("Failed to preload WhisperKit model: \(error)")
+        }
+    }
+    
     func transcribe(audioURL: URL) async throws -> String {
-        let whisperKit = try await WhisperKit()
+        let whisperKit: WhisperKit
+        if let loadedWhisperKit = self.whisperKit {
+            whisperKit = loadedWhisperKit
+        } else {
+            whisperKit = try await WhisperKit(config)
+        }
         
         let results = try await whisperKit.transcribe(audioPath: audioURL.path)
         guard !results.isEmpty else {
@@ -26,3 +56,4 @@ class TranscriptionService: ObservableObject, TranscriptionServiceProtocol {
         return fullText
     }
 }
+

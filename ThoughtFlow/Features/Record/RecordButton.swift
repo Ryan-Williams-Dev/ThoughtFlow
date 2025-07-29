@@ -21,7 +21,9 @@ struct RecordButton: View {
             ZStack(alignment: .trailing) {
                 buttonContent
                     .offset(x: min(vm.dragOffset, threshold))
-                lockIcon(threshold: threshold)
+                if vm.isRecording {
+                    lockIcon(threshold: threshold)
+                }
             }
             .gesture(
                 DragGesture(minimumDistance: 0)
@@ -59,6 +61,7 @@ struct RecordButton: View {
     }
 
     private var circleColor: Color {
+        if !vm.isModelLoaded { return .orange }
         if vm.isRecording { return .red }
         if vm.isProcessing { return .blue }
         if vm.isSuccess    { return .green }
@@ -66,6 +69,7 @@ struct RecordButton: View {
     }
 
     private var backgroundColor: Color {
+        if !vm.isModelLoaded { return Color.orange.opacity(0.1) }
         if vm.isRecording { return Color.red.opacity(0.1) }
         if vm.isProcessing { return Color.blue.opacity(0.1) }
         if vm.isSuccess    { return Color.green.opacity(0.1) }
@@ -73,12 +77,16 @@ struct RecordButton: View {
     }
 
     private var buttonText: String {
+        if !vm.isModelLoaded {
+            return "Loading AI model..."
+        }
+        
         switch (vm.isRecording, vm.isLockedOn, vm.isProcessing, vm.isSuccess) {
         case (true,  false, _,    _):    return "Slide right to lock"
-        case (_,     _,      true, _):    return "Processing..."
-        case (_,     _,      _,    true): return "Done!"
-        case (true,  true,   _,    _):    return "Tap to stop recording"
-        default:                          return "Hold to record"
+        case (_,     _,     true, _):    return "Processing..."
+        case (_,     _,     _,    true): return "Done!"
+        case (true,  true,  _,    _):    return "Tap to stop recording"
+        default:                         return "Hold to record"
         }
     }
 }
@@ -92,3 +100,4 @@ struct RecordButton: View {
 //                           transcriber: transcriber,
 //                           notesRepo: notesRepo))
 //}
+
