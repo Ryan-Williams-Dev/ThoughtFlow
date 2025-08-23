@@ -53,6 +53,13 @@ class TranscriptionService: ObservableObject, TranscriptionServiceProtocol {
             .map { $0.text.trimmingCharacters(in: .whitespacesAndNewlines) }
             .joined(separator: " ")
         
+        // Cleanup
+        do {
+            try FileManager.default.removeItem(at: audioURL)
+        } catch {
+            print("Warning: Failed to delete audio file at \(audioURL): \(error)")
+        }
+        
         return fullText
     }
 }
