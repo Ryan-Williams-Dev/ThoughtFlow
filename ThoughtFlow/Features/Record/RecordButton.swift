@@ -73,7 +73,7 @@ struct RecordButton: View {
         if vm.isRecording { return Color.red.opacity(0.1) }
         if vm.isProcessing { return Color.blue.opacity(0.1) }
         if vm.isSuccess    { return Color.green.opacity(0.1) }
-        return .clear
+        return .white
     }
 
     private var buttonText: String {

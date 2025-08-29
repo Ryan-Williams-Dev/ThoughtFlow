@@ -8,7 +8,7 @@
 import Foundation
 
 @available(iOS 15.0, *)
-class SummaryService: SummaryServiceProtocol {
+class InsightsService: SummaryServiceProtocol {
     private let noteRepository: NoteRepository
     private let openAIKey: String
 
@@ -52,7 +52,7 @@ class SummaryService: SummaryServiceProtocol {
         \(joinedText)
 
         ---
-        Return your response using this format:
+        Return your response in markdown using this format:
 
         ### 🧩 Key Themes
 

@@ -15,8 +15,6 @@ enum Tabs {
     case search
 }
 
-// ContentView.swift
-
 import SwiftData
 import SwiftUI
 
@@ -33,7 +31,7 @@ struct ContentView: View {
             }
             
             Tab("Insights", systemImage: "atom", value: Tabs.insights) {
-                Insights()
+                InsightsListView(vm: InsightsViewModel())
             }
 
             Tab("Settings", systemImage: "gear", value: Tabs.settings) {
@@ -61,4 +59,3 @@ struct ContentView: View {
     ContentView()
         .modelContainer(for: Note.self, inMemory: true)
 }
-

@@ -25,7 +25,6 @@ struct NoteDetailView: View {
                 .textSelection(.enabled)
         }
         .navigationTitle(note.createdAt.formatted(date: .abbreviated, time: .omitted))
-        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(role: .destructive) {

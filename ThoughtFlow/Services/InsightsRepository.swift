@@ -1,5 +1,5 @@
 //
-//  SummaryRepository.swift
+//  InsightsRepository.swift
 //  ThoughtFlow
 //
 //  Created by Ryan Williams on 2025-07-28.
@@ -8,7 +8,7 @@
 import Foundation
 import SwiftData
 
-class SummaryRepository {
+class InsightsRepository {
     private let modelContext: ModelContext
 
     init(modelContext: ModelContext) {
