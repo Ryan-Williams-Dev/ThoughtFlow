@@ -56,7 +56,7 @@ struct InsightsListView: View {
                 if let day = vm.selectedDay {
                     InsightsDetailView(insights: day)
                 } else {
-                    ContentUnavailableView("Select a Day", systemImage: "note.text")
+                    ContentUnavailableView("Select a Day", systemImage: "text.bubble")
                 }
             }
         }
@@ -118,6 +118,6 @@ func formatDayDisplay(date: Date) -> String {
 
 //
 //#Preview {
-//    // Supply a working NoteRepository instance here
-//    // InsightsListView(vm: InsightsViewModel(noteRepository: NoteRepository(modelContext: /* Your model context here */)))
+//    // Supply a working TranscriptRepository instance here
+//    // InsightsListView(vm: InsightsViewModel(transcriptRepository: TranscriptRepository(modelContext: /* Your model context here */)))
 //}

@@ -1,5 +1,5 @@
 //
-//  NoteDetailView.swift
+//  TranscriptDetailView.swift
 //  ThoughtFlow
 //
 //  Created by Ryan Williams on 2025-07-09.
@@ -8,23 +8,23 @@
 import SwiftData
 import SwiftUI
 
-struct NoteDetailView: View {
+struct TranscriptDetailView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var modelContext
-    var note: Note
+    var transcript: Transcript
     let onDelete: () -> Void
 
     @State private var showDeleteConfirmation = false
 
     var body: some View {
         ScrollView {
-            Text(note.text)
+            Text(transcript.text)
                 .font(.body)
                 .padding()
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .textSelection(.enabled)
         }
-        .navigationTitle(note.createdAt.formatted(date: .abbreviated, time: .omitted))
+        .navigationTitle(transcript.createdAt.formatted(date: .abbreviated, time: .omitted))
         .toolbar {
             ToolbarItem(placement: .navigationBarTrailing) {
                 Button(role: .destructive) {
@@ -34,11 +34,11 @@ struct NoteDetailView: View {
                 }
                 .tint(.red)
                 .confirmationDialog(
-                    "Are you sure you want to delete this note?",
+                    "Are you sure you want to delete this transcript?",
                     isPresented: $showDeleteConfirmation,
                     titleVisibility: .visible
                 ) {
-                    Button("Delete Note", role: .destructive) {
+                    Button("Delete Transcript", role: .destructive) {
                         onDelete()
                     }
                     Button("Cancel", role: .cancel) { }
@@ -49,7 +49,7 @@ struct NoteDetailView: View {
 }
 
 #Preview {
-    let previewNote = Note(text: "This is a sample note for previewing!\nAdd more lines as needed.", createdAt: Date())
-    NoteDetailView(note: previewNote, onDelete: {})
-        .modelContainer(for: Note.self, inMemory: true)
+    let previewTranscript = Transcript(text: "This is a sample transcript for previewing!\nAdd more lines as needed.", createdAt: Date())
+    TranscriptDetailView(transcript: previewTranscript, onDelete: {})
+        .modelContainer(for: Transcript.self, inMemory: true)
 }

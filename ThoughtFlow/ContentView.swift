@@ -27,7 +27,7 @@ struct ContentView: View {
     var body: some View {
         TabView(selection: $selectedTab) {
             Tab("Home", systemImage: "house", value: Tabs.home) {
-                NotesListView()
+                TranscriptsListView()
             }
             
             Tab("Insights", systemImage: "atom", value: Tabs.insights) {
@@ -39,7 +39,7 @@ struct ContentView: View {
             }
             
             Tab(value: Tabs.search, role: .search) {
-                NotesListView()
+                TranscriptsListView()
             }
         }
         .tabViewBottomAccessory {
@@ -47,7 +47,7 @@ struct ContentView: View {
                 vm: .init(
                     recorder: AudioRecorder(),
                     transcriber: TranscriptionService(),
-                    notesRepo: NoteRepository(modelContext: modelContext)
+                    transcriptRepo: TranscriptRepository(modelContext: modelContext)
                 )
             )
         }
@@ -57,5 +57,5 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .modelContainer(for: Note.self, inMemory: true)
+        .modelContainer(for: Transcript.self, inMemory: true)
 }

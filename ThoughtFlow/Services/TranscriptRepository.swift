@@ -1,5 +1,5 @@
 //
-//  NoteRespository.swift
+//  TranscriptRepository.swift
 //  ThoughtFlow
 //
 //  Created by Ryan Williams on 2025-07-19.
@@ -8,30 +8,30 @@
 import SwiftData
 import Foundation
 
-class NoteRepository: NoteRepositoryProtocol {
+class TranscriptRepository: TranscriptRepositoryProtocol {
     private let modelContext: ModelContext
 
     init(modelContext: ModelContext) {
         self.modelContext = modelContext
     }
 
-    func insert(note: Note) throws -> Note {
-        modelContext.insert(note)
+    func insert(transcript: Transcript) throws -> Transcript {
+        modelContext.insert(transcript)
         try modelContext.save()
-        return note
+        return transcript
     }
 
-    func save(note: Note) throws {
-        try modelContext.save()
-    }
-
-    func delete(note: Note) throws {
-        modelContext.delete(note)
+    func save(transcript: Transcript) throws {
         try modelContext.save()
     }
 
-    func fetchAllNotes() throws -> [Note] {
-        let descriptor = FetchDescriptor<Note>(
+    func delete(transcript: Transcript) throws {
+        modelContext.delete(transcript)
+        try modelContext.save()
+    }
+
+    func fetchAllTranscripts() throws -> [Transcript] {
+        let descriptor = FetchDescriptor<Transcript>(
             sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
         )
         return try modelContext.fetch(descriptor)

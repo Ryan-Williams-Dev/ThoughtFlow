@@ -95,9 +95,9 @@ struct RecordButton: View {
 //    // Example injection for preview
 //    let recorder = AudioRecorder()
 //    let transcriber = TranscriptionService()
-//    let notesRepo = SwiftDataNoteRepository(context: ModelContext())
+//    let transcriptRepo = SwiftDataTranscriptRepository(context: ModelContext())
 //    RecordButton(vm: .init(recorder: recorder,
 //                           transcriber: transcriber,
-//                           notesRepo: notesRepo))
+//                           transcriptRepo: transcriptRepo))
 //}
 

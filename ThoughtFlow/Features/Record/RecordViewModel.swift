@@ -22,18 +22,18 @@ class RecordViewModel: ObservableObject {
     // MARK: - Injected Services
     private let recorder: RecordingServiceProtocol
     private let transcriber: TranscriptionServiceProtocol
-    private let notesRepo: NoteRepositoryProtocol
+    private let transcriptRepo: TranscriptRepositoryProtocol
     
     private var cancellables = Set<AnyCancellable>()
     
     init(
         recorder: RecordingServiceProtocol,
         transcriber: TranscriptionServiceProtocol,
-        notesRepo: NoteRepositoryProtocol
+        transcriptRepo: TranscriptRepositoryProtocol
     ) {
         self.recorder = recorder
         self.transcriber = transcriber
-        self.notesRepo = notesRepo
+        self.transcriptRepo = transcriptRepo
 
         if let transcriptionService = transcriber as? TranscriptionService {
             transcriptionService.$isModelLoaded
@@ -119,8 +119,8 @@ class RecordViewModel: ObservableObject {
             }.value
 
             let transcript = try await transcriber.transcribe(audioURL: url)
-            let note = Note(text: transcript)
-            _ = try notesRepo.insert(note: note)
+            let transcriptModel = Transcript(text: transcript)
+            _ = try transcriptRepo.insert(transcript: transcriptModel)
 
             isProcessing = false
             isSuccess = true

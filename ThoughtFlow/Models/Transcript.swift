@@ -1,5 +1,5 @@
 //
-//  Note.swift
+//  Transcript.swift
 //  ThoughtFlow
 //
 //  Created by Ryan Williams on 2025-07-09.
@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 @Model
-class Note: Hashable {
+class Transcript: Hashable {
     var id: UUID
     var text: String
     var createdAt: Date
@@ -23,7 +23,7 @@ class Note: Hashable {
     var title: String {
         let firstLine = text.components(separatedBy: .newlines).first ?? ""
         if firstLine.isEmpty {
-            return "New Note"
+            return "New Transcript"
         }
         if firstLine.count > 40 {
             let index = firstLine.index(firstLine.startIndex, offsetBy: 40)
@@ -40,7 +40,7 @@ class Note: Hashable {
         Calendar.current.startOfDay(for: createdAt)
     }
     
-    static func == (lhs: Note, rhs: Note) -> Bool {
+    static func == (lhs: Transcript, rhs: Transcript) -> Bool {
         return lhs.id == rhs.id
     }
 
