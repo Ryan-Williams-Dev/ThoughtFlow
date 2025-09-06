@@ -10,8 +10,8 @@ import Foundation
 
 protocol RecordingServiceProtocol {
     // Begins audio capture. Throws if the engine can't start.
-    func startRecording() throws
+    func startRecording() async throws
 
     // Stops capture and returns the file URL. Throws on failure.
-    func stopRecording() throws -> URL
+    func stopRecording() async throws -> URL
 }

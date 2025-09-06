@@ -15,6 +15,7 @@ struct InsightsListView: View {
         _vm = StateObject(wrappedValue: vm)
     }
     
+    
     var body: some View {
         NavigationSplitView {
             List(selection: $vm.selectedDay) {
@@ -40,12 +41,9 @@ struct InsightsListView: View {
                 }
             }
             .navigationTitle("Insights")
-            .toolbar {
-                Button("Generate Insights") {
-                    print("Generating Insights")
-                }
-            }
             .onAppear {
+                // Refresh data when view appears
+                vm.refreshDaysWithTranscripts()
                 // Auto-expand the most recent month
                 if let mostRecentMonth = groupDaysByMonth(days: vm.days).first {
                     expandedMonths.insert(mostRecentMonth.id)
@@ -54,7 +52,50 @@ struct InsightsListView: View {
         } detail: {
             Group {
                 if let day = vm.selectedDay {
-                    InsightsDetailView(insights: day)
+                    if day.text != nil {
+                        // Show insights if they exist
+                        InsightsDetailView(insights: day, insightsService: vm.insightsService as? InsightsService)
+                    } else {
+                        // Show generate button if no insights exist
+                        VStack(spacing: 20) {
+                            Image(systemName: "brain.head.profile")
+                                .font(.system(size: 60))
+                                .foregroundColor(.blue)
+                            
+                            Text("Generate Insights")
+                                .font(.title2)
+                                .fontWeight(.semibold)
+                            
+                            Text("Generate AI-powered insights from your transcripts for \(day.date.formatted(date: .abbreviated, time: .omitted))")
+                                .multilineTextAlignment(.center)
+                                .foregroundColor(.secondary)
+                                .padding(.horizontal)
+                            
+                            Button(action: {
+                                Task {
+                                    await vm.generateInsights(for: day)
+                                }
+                            }) {
+                                HStack {
+                                    if vm.isGeneratingInsightsForDate(day.date) {
+                                        ProgressView()
+                                            .scaleEffect(0.8)
+                                    }
+                                    Text(vm.isGeneratingInsightsForDate(day.date) ? "Generating..." : "Generate Insights")
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .background(Color.blue)
+                                .foregroundColor(.white)
+                                .cornerRadius(10)
+                            }
+                            .disabled(vm.isGeneratingInsights)
+                            .padding(.horizontal)
+                            
+                            Spacer()
+                        }
+                        .padding()
+                    }
                 } else {
                     ContentUnavailableView("Select a Day", systemImage: "text.bubble")
                 }

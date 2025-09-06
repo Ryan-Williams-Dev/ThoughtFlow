@@ -9,23 +9,37 @@ import Combine
 import Foundation
 import SwiftUI
 
+/// ViewModel responsible for managing the recording interface and audio capture workflow.
+/// Handles drag gestures, recording lifecycle, transcription, and user feedback.
 @MainActor
 class RecordViewModel: ObservableObject {
     // MARK: - View State
+    /// Whether audio recording is currently active
     @Published var isRecording = false
-    @Published var isLockedOn = false
-    @Published var dragOffset: CGFloat = 0
+    /// Whether transcription is in progress
     @Published var isProcessing = false
+    /// Whether the last recording was successful
     @Published var isSuccess = false
+    /// Whether the transcription model is loaded and ready
     @Published var isModelLoaded = false
+    /// Whether the transcription model is currently loading
+    @Published var isModelLoading = false
+    /// Any error that occurred during model loading
+    @Published var modelLoadingError: Error?
 
     // MARK: - Injected Services
     private let recorder: RecordingServiceProtocol
     private let transcriber: TranscriptionServiceProtocol
     private let transcriptRepo: TranscriptRepositoryProtocol
     
+    /// Combine cancellables for managing subscriptions
     private var cancellables = Set<AnyCancellable>()
     
+    /// Initialize the RecordViewModel with required services
+    /// - Parameters:
+    ///   - recorder: Service for audio recording functionality
+    ///   - transcriber: Service for converting audio to text
+    ///   - transcriptRepo: Repository for persisting transcript data
     init(
         recorder: RecordingServiceProtocol,
         transcriber: TranscriptionServiceProtocol,
@@ -35,124 +49,139 @@ class RecordViewModel: ObservableObject {
         self.transcriber = transcriber
         self.transcriptRepo = transcriptRepo
 
+        // Subscribe to transcription service state changes if it's the concrete implementation
         if let transcriptionService = transcriber as? TranscriptionService {
             transcriptionService.$isModelLoaded
                 .receive(on: DispatchQueue.main)
                 .assign(to: \.isModelLoaded, on: self)
                 .store(in: &cancellables)
+            
+            transcriptionService.$isModelLoading
+                .receive(on: DispatchQueue.main)
+                .assign(to: \.isModelLoading, on: self)
+                .store(in: &cancellables)
+            
+            transcriptionService.$modelLoadingError
+                .receive(on: DispatchQueue.main)
+                .assign(to: \.modelLoadingError, on: self)
+                .store(in: &cancellables)
         }
     }
 
     // MARK: - Public Intents
-    func handleDragChanged(_ translation: CGFloat, lockThreshold: CGFloat) {
-        dragOffset = min(max(translation, 0), lockThreshold)
-        if !isRecording && !isProcessing && !isSuccess {
-            triggerInitialHaptic()
+    
+    /// Handle tap gesture - toggle recording on/off
+    func handleTap() {
+        // If model failed to load, allow tap to retry
+        if modelLoadingError != nil {
             Task {
-                await startRecording()
+                await retryModelLoading()
             }
+            return
         }
-
-        if translation > lockThreshold && !isLockedOn
-            && dragOffset <= lockThreshold
-        {
-            lockRecording()
-            triggerLockHaptic()
+        
+        guard isModelLoaded else {
+            print("⚠️ Model not loaded, ignoring tap")
+            return
         }
-
-        if translation > 0 && !isLockedOn {
-            dragOffset = min(translation, lockThreshold)
-        }
-    }
-
-    func handleDragEnded(_ translation: CGFloat, lockThreshold: CGFloat) {
-        guard isModelLoaded else { return }
         
         Task {
             if isRecording {
-                if isLockedOn && translation <= lockThreshold {
-                    // Tap to finish when locked (no significant drag)
-                    await stopRecording()
-                } else if !isLockedOn {
-                    // Normal press and hold ended (not locked)
-                    await stopRecording()
-                }
-            }
-            withAnimation(.easeOut(duration: 0.3)) {
-                dragOffset = 0
+                // Stop recording
+                await stopRecording()
+            } else {
+                // Start recording
+                await startRecording()
             }
         }
     }
 
     // MARK: - Recording Lifecycle
+    
+    /// Start audio recording if conditions are met
     func startRecording() async {
+        // Prevent multiple simultaneous recording attempts
+        guard !isRecording && !isProcessing else {
+            print("⚠️ Recording already in progress, ignoring start request")
+            return
+        }
+        
         do {
-            try await Task.detached { [weak self] in
-                guard let self = self else { return }
-                try await self.recorder.startRecording()
-            }.value
+            // Start recording directly (it's already async and handles permissions)
+            try await recorder.startRecording()
 
             // Update state on main actor
-            isRecording = true
+            await MainActor.run {
+                self.isRecording = true
+            }
         } catch {
             print("Failed to start recording: \(error)")
+            await MainActor.run {
+                self.isRecording = false
+            }
         }
     }
 
+    /// Stop audio recording and process the captured audio
     func stopRecording() async {
-        // immediately mark not recording
+        // Immediately mark not recording
         isRecording = false
-        // reset lock state
-        isLockedOn = false
         isProcessing = true
 
         do {
-            let url = try await Task.detached { [weak self] in
-                guard let self = self else {
-                    throw NSError(
-                        domain: "RecordViewModel",
-                        code: -1,
-                        userInfo: nil
-                    )
-                }
-                return try await self.recorder.stopRecording()
-            }.value
+            // Stop recording and get audio file URL
+            let url = try await recorder.stopRecording()
 
+            // Transcribe the audio
             let transcript = try await transcriber.transcribe(audioURL: url)
             let transcriptModel = Transcript(text: transcript)
             _ = try transcriptRepo.insert(transcript: transcriptModel)
 
-            isProcessing = false
-            isSuccess = true
-            triggerSuccessHaptic()
+            // Update UI state on main thread
+            await MainActor.run {
+                self.isProcessing = false
+                self.isSuccess = true
+                self.triggerHapticFeedback(.success)
+            }
 
+            // Auto-hide success state after 2 seconds
             DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
                 self.isSuccess = false
             }
         } catch {
-            isProcessing = false
+            // Handle errors gracefully
+            await MainActor.run {
+                self.isProcessing = false
+            }
+            
             print("Error stopping recording: \(error)")
+            // Note: Audio file cleanup is handled by TranscriptionService.transcribe()
         }
     }
 
     // MARK: - Helpers
-    private func lockRecording() {
-        isLockedOn = true
+    
+    /// Types of haptic feedback available
+    private enum HapticType {
+        case success, error
     }
-
-    private func triggerInitialHaptic() {
-        let generator = UIImpactFeedbackGenerator(style: .medium)
-        generator.prepare()
-        generator.impactOccurred()
+    
+    /// Trigger haptic feedback for successful completion
+    private func triggerHapticFeedback(_ type: HapticType) {
+        // Only trigger haptic for success (completion)
+        if case .success = type {
+            let generator = UINotificationFeedbackGenerator()
+            generator.prepare()
+            generator.notificationOccurred(.success)
+        }
     }
-
-    private func triggerLockHaptic() {
-        let generator = UIImpactFeedbackGenerator(style: .heavy)
-        generator.prepare()
-        generator.impactOccurred()
-    }
-
-    private func triggerSuccessHaptic() {
-        UINotificationFeedbackGenerator().notificationOccurred(.success)
+    
+    // MARK: - Model Loading
+    
+    /// Retry loading the transcription model after a failure
+    private func retryModelLoading() async {
+        if let transcriptionService = transcriber as? TranscriptionService {
+            await transcriptionService.retryModelLoading()
+        }
     }
 }

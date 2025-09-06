@@ -25,12 +25,23 @@ enum RecordingError: LocalizedError {
 final class AudioRecorder: NSObject, ObservableObject, RecordingServiceProtocol {
     private var recorder: AVAudioRecorder?
     private(set) var audioURL: URL?
+    private var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
 
-    func startRecording() throws {
+    func startRecording() async throws {
+        // Audio session and permissions are already configured during app setup
+        // Just start recording directly
+        try await MainActor.run {
+            try self.startRecordingInternal()
+        }
+    }
+    
+    private func startRecordingInternal() throws {
         let filename = UUID().uuidString + ".m4a"
         let path = FileManager.default.temporaryDirectory
             .appendingPathComponent(filename)
         self.audioURL = path
+
+        print("🎙️ Starting audio recording to: \(path.lastPathComponent)")
 
         let settings: [String: Any] = [
             AVFormatIDKey: Int(kAudioFormatMPEG4AAC),
@@ -50,23 +61,26 @@ final class AudioRecorder: NSObject, ObservableObject, RecordingServiceProtocol 
         }
     }
 
-    func stopRecording() throws -> URL {
-        guard let recorder = recorder else {
-            throw RecordingError.failedToStart
+    func stopRecording() async throws -> URL {
+        return try await MainActor.run {
+            guard let recorder = recorder else {
+                throw RecordingError.failedToStart
+            }
+
+            if recorder.isRecording {
+                recorder.stop()
+            }
+
+            let url = recorder.url
+
+            let fileExists = FileManager.default.fileExists(atPath: url.path)
+            if !fileExists {
+                throw RecordingError.fileNotSaved
+            }
+
+            print("🛑 Stopped audio recording: \(url.lastPathComponent)")
+            self.recorder = nil
+            return url
         }
-
-        if recorder.isRecording {
-            recorder.stop()
-        }
-
-        let url = recorder.url
-
-        let fileExists = FileManager.default.fileExists(atPath: url.path)
-        if !fileExists {
-            throw RecordingError.fileNotSaved
-        }
-
-        self.recorder = nil
-        return url
     }
 }

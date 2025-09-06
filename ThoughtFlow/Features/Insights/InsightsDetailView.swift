@@ -9,6 +9,12 @@ import SwiftUI
 
 struct InsightsDetailView: View {
     let insights: Insights
+    let insightsService: InsightsService?
+    
+    init(insights: Insights, insightsService: InsightsService? = nil) {
+        self.insights = insights
+        self.insightsService = insightsService
+    }
     
     var body: some View {
             ScrollView {
@@ -37,9 +43,17 @@ struct InsightsDetailView: View {
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
-                            Text(LocalizedStringKey(text))
-                                .font(.body)
-                                .lineSpacing(4)
+                            if let attributedString = insightsService?.convertRTFToAttributedString(text) {
+                                Text(attributedString)
+                                    .font(.body)
+                                    .lineSpacing(4)
+                                    .textSelection(.enabled)
+                            } else {
+                                Text(text)
+                                    .font(.body)
+                                    .lineSpacing(4)
+                                    .textSelection(.enabled)
+                            }
                         }
                     } else {
                         // Empty State

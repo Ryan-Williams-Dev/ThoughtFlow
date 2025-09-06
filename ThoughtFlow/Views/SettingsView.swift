@@ -54,6 +54,63 @@ struct SettingsView: View {
                         .foregroundColor(.secondary)
                 }
                 
+                Section("Storage") {
+                    Button("Clear AI Model Cache") {
+                        // Clear WhisperKit cache
+                        let cacheURL = FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
+                        let whisperKitCacheURL = cacheURL?.appendingPathComponent("com.argmax.whisperkit")
+                        
+                        if let cacheURL = whisperKitCacheURL {
+                            do {
+                                try FileManager.default.removeItem(at: cacheURL)
+                                print("Cleared WhisperKit cache")
+                            } catch {
+                                print("Failed to clear WhisperKit cache: \(error)")
+                            }
+                        }
+                        
+                        // Also clear HuggingFace cache
+                        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+                        let huggingFaceCacheURL = documentsURL?.appendingPathComponent("huggingface")
+                        
+                        if let cacheURL = huggingFaceCacheURL {
+                            do {
+                                try FileManager.default.removeItem(at: cacheURL)
+                                print("Cleared HuggingFace cache")
+                            } catch {
+                                print("Failed to clear HuggingFace cache: \(error)")
+                            }
+                        }
+                    }
+                    
+                    Button("Clear App Data Cache") {
+                        // Clear SwiftData cache
+                        let documentsURL = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+                        let appSupportURL = documentsURL?.appendingPathComponent("Library/Application Support")
+                        
+                        if let cacheURL = appSupportURL {
+                            do {
+                                try FileManager.default.removeItem(at: cacheURL)
+                                print("Cleared SwiftData cache")
+                            } catch {
+                                print("Failed to clear SwiftData cache: \(error)")
+                            }
+                        }
+                        
+                        // Clear temp files
+                        let tempURL = FileManager.default.temporaryDirectory
+                        do {
+                            let tempFiles = try FileManager.default.contentsOfDirectory(at: tempURL, includingPropertiesForKeys: nil)
+                            for file in tempFiles {
+                                try FileManager.default.removeItem(at: file)
+                            }
+                            print("Cleared temp files")
+                        } catch {
+                            print("Failed to clear temp files: \(error)")
+                        }
+                    }
+                }
+                
                 Section("Danger Zone") {
                     Button("Delete Account", role: .destructive) {
                         isPresentingDeleteAccountConfirmationSheet = true

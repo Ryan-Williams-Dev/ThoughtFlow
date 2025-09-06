@@ -20,6 +20,8 @@ import SwiftUI
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
+    @EnvironmentObject private var audioRecorder: AudioRecorder
+    @EnvironmentObject private var transcriptionService: TranscriptionService
 
     @State var selectedTab: Tabs = .home
     @State var searchText: String = ""
@@ -31,7 +33,11 @@ struct ContentView: View {
             }
             
             Tab("Insights", systemImage: "atom", value: Tabs.insights) {
-                InsightsListView(vm: InsightsViewModel())
+                InsightsListView(vm: InsightsViewModel(
+                    insightsService: InsightsService(
+                        transcriptRepository: TranscriptRepository(modelContext: modelContext)
+                    )
+                ))
             }
 
             Tab("Settings", systemImage: "gear", value: Tabs.settings) {
@@ -45,8 +51,8 @@ struct ContentView: View {
         .tabViewBottomAccessory {
             RecordButton(
                 vm: .init(
-                    recorder: AudioRecorder(),
-                    transcriber: TranscriptionService(),
+                    recorder: audioRecorder,
+                    transcriber: transcriptionService,
                     transcriptRepo: TranscriptRepository(modelContext: modelContext)
                 )
             )
@@ -58,4 +64,6 @@ struct ContentView: View {
 #Preview {
     ContentView()
         .modelContainer(for: Transcript.self, inMemory: true)
+        .environmentObject(AudioRecorder())
+        .environmentObject(TranscriptionService())
 }

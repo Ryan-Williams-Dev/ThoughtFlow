@@ -14,21 +14,58 @@ struct ThoughtFlowApp: App {
         let schema = Schema([
             Transcript.self,
         ])
+        
+        // Try to create with persistent storage first
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         do {
             return try ModelContainer(for: schema, configurations: [modelConfiguration])
         } catch {
-            fatalError("Could not create ModelContainer: \(error)")
+            print("Failed to create persistent ModelContainer: \(error)")
+            
+            // Fallback to in-memory storage if persistent storage fails
+            let inMemoryConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+            do {
+                print("Falling back to in-memory storage")
+                return try ModelContainer(for: schema, configurations: [inMemoryConfiguration])
+            } catch {
+                fatalError("Could not create ModelContainer even with in-memory storage: \(error)")
+            }
         }
     }()
     
     @StateObject private var audioRecorder = AudioRecorder()
+    @StateObject private var transcriptionService = TranscriptionService()
+    @StateObject private var setupManager: AppSetupManager
+    @State private var isSetupComplete = false
+
+    init() {
+        // Create shared instances
+        let audioRecorder = AudioRecorder()
+        let transcriptionService = TranscriptionService()
+        
+        // Pass the same instances to setup manager
+        let setupManager = AppSetupManager(audioRecorder: audioRecorder, transcriptionService: transcriptionService)
+        
+        _audioRecorder = StateObject(wrappedValue: audioRecorder)
+        _transcriptionService = StateObject(wrappedValue: transcriptionService)
+        _setupManager = StateObject(wrappedValue: setupManager)
+    }
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environmentObject(audioRecorder)
+            if isSetupComplete {
+                ContentView()
+                    .environmentObject(audioRecorder)
+                    .environmentObject(transcriptionService)
+            } else {
+                SetupView(setupManager: setupManager) {
+                    isSetupComplete = true
+                }
+                .task {
+                    await setupManager.performInitialSetup()
+                }
+            }
         }
         .modelContainer(sharedModelContainer)
     }
