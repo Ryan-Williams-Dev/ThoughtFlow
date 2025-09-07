@@ -13,7 +13,7 @@ class InsightsService: InsightServiceProtocol {
     let transcriptRepository: TranscriptRepository
     private let insightsServerURL: String
     
-    init(transcriptRepository: TranscriptRepository, insightsServerURL: String = "http://192.168.1.6:3000") {
+    init(transcriptRepository: TranscriptRepository, insightsServerURL: String = "http://192.168.1.7:3000") {
         self.transcriptRepository = transcriptRepository
         self.insightsServerURL = insightsServerURL
     }

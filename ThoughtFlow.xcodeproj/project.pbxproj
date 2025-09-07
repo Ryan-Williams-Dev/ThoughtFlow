@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4E4F41602E6DFE6A00733E73 /* ThoughtFlowAppLogo.icon in Resources */ = {isa = PBXBuildFile; fileRef = 4E4F415F2E6DFE6A00733E73 /* ThoughtFlowAppLogo.icon */; };
 		4E72EA272E29726300C4733D /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = 4E72EA262E29726300C4733D /* WhisperKit */; };
 		4E72EA292E29726300C4733D /* whisperkit-cli in Frameworks */ = {isa = PBXBuildFile; productRef = 4E72EA282E29726300C4733D /* whisperkit-cli */; };
 /* End PBXBuildFile section */
@@ -29,6 +30,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		4E4F415F2E6DFE6A00733E73 /* ThoughtFlowAppLogo.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = ThoughtFlowAppLogo.icon; sourceTree = "<group>"; };
 		4EC2D1552E1F082C008E792A /* ThoughtFlow.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ThoughtFlow.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		4EC2D1642E1F082D008E792A /* ThoughtFlowTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThoughtFlowTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		4EC2D16E2E1F082D008E792A /* ThoughtFlowUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ThoughtFlowUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -86,6 +88,7 @@
 				4EC2D1672E1F082D008E792A /* ThoughtFlowTests */,
 				4EC2D1712E1F082D008E792A /* ThoughtFlowUITests */,
 				4EC2D1562E1F082C008E792A /* Products */,
+				4E4F415F2E6DFE6A00733E73 /* ThoughtFlowAppLogo.icon */,
 			);
 			sourceTree = "<group>";
 		};
@@ -224,6 +227,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				4E4F41602E6DFE6A00733E73 /* ThoughtFlowAppLogo.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -405,7 +409,7 @@
 		4EC2D1792E1F082D008E792A /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = ThoughtFlowAppLogo;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -439,7 +443,7 @@
 		4EC2D17A2E1F082D008E792A /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = ThoughtFlowAppLogo;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
