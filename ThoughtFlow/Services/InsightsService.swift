@@ -11,14 +11,29 @@ import UIKit
 @available(iOS 15.0, *)
 class InsightsService: InsightServiceProtocol {
     let transcriptRepository: TranscriptRepository
+    let insightsRepository: InsightsRepository
     private let insightsServerURL: String
     
-    init(transcriptRepository: TranscriptRepository, insightsServerURL: String = "http://192.168.1.7:3000") {
+    init(transcriptRepository: TranscriptRepository, insightsRepository: InsightsRepository, insightsServerURL: String? = nil) {
         self.transcriptRepository = transcriptRepository
-        self.insightsServerURL = insightsServerURL
+        self.insightsRepository = insightsRepository
+        
+        // Use provided URL or fall back to configuration
+        if let providedURL = insightsServerURL {
+            self.insightsServerURL = providedURL
+        } else {
+            // Read from Info.plist configuration
+            self.insightsServerURL = Bundle.main.object(forInfoDictionaryKey: "INSIGHTS_API_BASE_URL") as? String ?? "https://insights-api-production-be4a.up.railway.app"
+        }
     }
 
     func generateInsights(for date: Date) async throws -> String {
+        // Check if insights already exist for this date
+        if let existingInsights = try insightsRepository.fetchInsights(for: date),
+           let text = existingInsights.text, !text.isEmpty {
+            return text
+        }
+        
         let allTranscripts = try transcriptRepository.fetchAllTranscripts()
 
         let startOfDay = Calendar.current.startOfDay(for: date)
@@ -35,7 +50,13 @@ class InsightsService: InsightServiceProtocol {
         let texts = transcriptsForDay.map { $0.text }
         let joinedText = texts.joined(separator: "\n\n")
 
-        return try await callInsightsServer(with: joinedText)
+        let insightsText = try await callInsightsServer(with: joinedText)
+        
+        // Save the generated insights to the repository
+        let insights = Insights(date: date, text: insightsText)
+        _ = try insightsRepository.insert(insights: insights)
+        
+        return insightsText
     }
 
     private func callInsightsServer(with transcripts: String) async throws -> String {

@@ -35,7 +35,8 @@ struct ContentView: View {
             Tab("Insights", systemImage: "atom", value: Tabs.insights) {
                 InsightsListView(vm: InsightsViewModel(
                     insightsService: InsightsService(
-                        transcriptRepository: TranscriptRepository(modelContext: modelContext)
+                        transcriptRepository: TranscriptRepository(modelContext: modelContext),
+                        insightsRepository: InsightsRepository(modelContext: modelContext)
                     )
                 ))
             }

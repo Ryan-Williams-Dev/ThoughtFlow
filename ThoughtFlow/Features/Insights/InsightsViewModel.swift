@@ -35,10 +35,10 @@ class InsightsViewModel: ObservableObject {
         generatingForDate = day.date
         
         do {
-            // Call the insights service
+            // Call the insights service (this will save to repository automatically)
             let insightsText = try await insightsService.generateInsights(for: day.date)
             
-            // Update the insights with the generated text
+            // Update the local model with the generated text
             days[index].text = insightsText
             selectedDay = days[index]
             
@@ -79,18 +79,23 @@ class InsightsViewModel: ObservableObject {
         
         do {
             let allTranscripts = try insightsService.transcriptRepository.fetchAllTranscripts()
+            let allInsights = try insightsService.insightsRepository.fetchAllInsights()
             
             // Group transcripts by date
             let transcriptsByDate = Dictionary(grouping: allTranscripts) { transcript in
                 calendar.startOfDay(for: transcript.createdAt)
             }
             
+            // Create a dictionary of existing insights by date
+            let insightsByDate = Dictionary(uniqueKeysWithValues: allInsights.map { insights in
+                (insights.date, insights.text)
+            })
+            
             // Create Insights objects only for days that have transcripts
             let daysWithTranscripts = transcriptsByDate.map { (date, transcripts) in
                 // Check if insights already exist for this date
-                // For now, we'll assume no insights exist (text: nil)
-                // In a real app, you'd check a separate insights repository
-                return Insights(date: date, text: nil)
+                let existingInsightsText = insightsByDate[date] ?? nil
+                return Insights(date: date, text: existingInsightsText)
             }
             
             // Filter out current day and sort by date (most recent first)

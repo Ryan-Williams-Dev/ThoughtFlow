@@ -15,18 +15,33 @@ class InsightsRepository {
         self.modelContext = modelContext
     }
 
-    func insert(summary: Summary) throws -> Summary {
-        modelContext.insert(summary)
+    func insert(insights: Insights) throws -> Insights {
+        modelContext.insert(insights)
         try modelContext.save()
-        return summary
+        return insights
     }
 
-    func fetchSummary(for date: Date) throws -> Summary? {
+    func fetchInsights(for date: Date) throws -> Insights? {
         let startOfDay = Calendar.current.startOfDay(for: date)
-        let descriptor = FetchDescriptor<Summary>(
+        let descriptor = FetchDescriptor<Insights>(
             predicate: #Predicate { $0.date == startOfDay }
         )
         let results = try modelContext.fetch(descriptor)
         return results.first
     }
+    
+    func fetchAllInsights() throws -> [Insights] {
+        let descriptor = FetchDescriptor<Insights>(
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        return try modelContext.fetch(descriptor)
+    }
+    
+    func deleteInsights(for date: Date) throws {
+        if let insights = try fetchInsights(for: date) {
+            modelContext.delete(insights)
+            try modelContext.save()
+        }
+    }
+    
 }

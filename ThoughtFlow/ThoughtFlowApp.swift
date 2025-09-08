@@ -13,6 +13,7 @@ struct ThoughtFlowApp: App {
     var sharedModelContainer: ModelContainer = {
         let schema = Schema([
             Transcript.self,
+            Insights.self,
         ])
         
         // Try to create with persistent storage first
