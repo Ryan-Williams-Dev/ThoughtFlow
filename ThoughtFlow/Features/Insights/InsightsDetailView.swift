@@ -43,17 +43,10 @@ struct InsightsDetailView: View {
                                 .font(.headline)
                                 .foregroundStyle(.primary)
                             
-                            if let attributedString = insightsService?.convertRTFToAttributedString(text) {
-                                Text(attributedString)
-                                    .font(.body)
-                                    .lineSpacing(4)
-                                    .textSelection(.enabled)
-                            } else {
-                                Text(text)
-                                    .font(.body)
-                                    .lineSpacing(4)
-                                    .textSelection(.enabled)
-                            }
+                            Text(.init(text))
+                                .font(.body)
+                                .lineSpacing(4)
+                                .textSelection(.enabled)
                         }
                     } else {
                         // Empty State

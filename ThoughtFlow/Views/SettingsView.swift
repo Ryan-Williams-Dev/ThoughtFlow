@@ -16,16 +16,28 @@ enum Accent: String, CaseIterable {
 }
 
 struct SettingsView: View {
-    @State private var selectedAccent: Accent = .unitedStates
-
-    @State private var requireFaceIDOnLaunch: Bool = false
+    @StateObject private var userDefaults = UserDefaultsManager.shared
     @State private var isPresentingDeleteAccountConfirmationSheet: Bool = false
+    
+    private var selectedAccent: Accent {
+        get {
+            Accent(rawValue: userDefaults.selectedAccent) ?? .unitedStates
+        }
+        set {
+            userDefaults.selectedAccent = newValue.rawValue
+        }
+    }
 
     var body: some View {
         VStack {
             List {
                 Section("Personalisation") {
-                    Picker("Accent", selection: $selectedAccent) {
+                    Picker("Accent", selection: Binding(
+                        get: { selectedAccent },
+                        set: { newValue in
+                            userDefaults.selectedAccent = newValue.rawValue
+                        }
+                    )) {
                         Text("United States").tag(Accent.unitedStates)
                         Text("United Kingdom").tag(Accent.unitedKingdom)
                         Text("India").tag(Accent.india)
@@ -37,7 +49,7 @@ struct SettingsView: View {
                 Section("Privacy and Data") {
                     Toggle(
                         "Require Face ID on Launch",
-                        isOn: $requireFaceIDOnLaunch
+                        isOn: $userDefaults.requireFaceIDOnLaunch
                     )
                     
                     Button("Export Data") {

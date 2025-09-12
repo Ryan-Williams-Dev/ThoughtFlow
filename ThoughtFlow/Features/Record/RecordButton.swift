@@ -23,7 +23,6 @@ struct RecordButton: View {
             .disabled(vm.isModelLoading && vm.modelLoadingError == nil)
             .frame(maxHeight: .infinity)
             .background(backgroundColor)
-            .glassEffect()
     }
 
     @ViewBuilder
@@ -31,7 +30,7 @@ struct RecordButton: View {
         HStack(spacing: 12) {
             Circle()
                 .fill(circleColor)
-                .frame(width: 16, height: 16)
+                .frame(width: 12, height: 12)
                 .scaleEffect(vm.isRecording ? 1.3 : 1.0)
                 .animation(.easeInOut(duration: 0.2), value: vm.isRecording)
             
@@ -62,7 +61,7 @@ struct RecordButton: View {
         if vm.isRecording { return Color.red.opacity(0.15) }
         if vm.isProcessing { return Color.blue.opacity(0.15) }
         if vm.isSuccess { return Color.green.opacity(0.15) }
-        return Color.primary.opacity(0.05)
+        return .clear
     }
 
     private var buttonText: String {

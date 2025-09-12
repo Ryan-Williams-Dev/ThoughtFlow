@@ -416,6 +416,7 @@
 				DEVELOPMENT_TEAM = KSUCMPKC4S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs access to your microphone.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "This app needs access to transcribe your speech into text.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -450,6 +451,7 @@
 				DEVELOPMENT_TEAM = KSUCMPKC4S;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_NSFaceIDUsageDescription = "";
 				INFOPLIST_KEY_NSMicrophoneUsageDescription = "This app needs access to your microphone.";
 				INFOPLIST_KEY_NSSpeechRecognitionUsageDescription = "This app needs access to transcribe your speech into text.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;

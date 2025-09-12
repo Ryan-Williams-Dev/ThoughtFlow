@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 @main
 struct ThoughtFlowApp: App {
@@ -38,7 +39,10 @@ struct ThoughtFlowApp: App {
     @StateObject private var audioRecorder = AudioRecorder()
     @StateObject private var transcriptionService = TranscriptionService()
     @StateObject private var setupManager: AppSetupManager
+    @StateObject private var userDefaults = UserDefaultsManager.shared
     @State private var isSetupComplete = false
+    @State private var isAuthenticated = false
+    @Environment(\.scenePhase) private var scenePhase
 
     init() {
         // Create shared instances
@@ -55,17 +59,26 @@ struct ThoughtFlowApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if isSetupComplete {
-                ContentView()
-                    .environmentObject(audioRecorder)
-                    .environmentObject(transcriptionService)
-            } else {
+            if !isSetupComplete {
                 SetupView(setupManager: setupManager) {
                     isSetupComplete = true
                 }
                 .task {
                     await setupManager.performInitialSetup()
                 }
+            } else if userDefaults.requireFaceIDOnLaunch && !isAuthenticated {
+                LockScreenView {
+                    isAuthenticated = true
+                }
+            } else {
+                ContentView(isAuthenticated: $isAuthenticated)
+                    .environmentObject(audioRecorder)
+                    .environmentObject(transcriptionService)
+                    .onChange(of: scenePhase) { _, newPhase in
+                        if newPhase == .background && userDefaults.requireFaceIDOnLaunch {
+                            isAuthenticated = false
+                        }
+                    }
             }
         }
         .modelContainer(sharedModelContainer)

@@ -153,7 +153,7 @@ func groupDaysByMonth(days: [Insights]) -> [MonthSection] {
 
 func formatDayDisplay(date: Date) -> String {
     let formatter = DateFormatter()
-    formatter.dateFormat = "d - EEEE" // e.g., "31, Wednesday"
+    formatter.dateFormat = "EEEE, d MMMM" // e.g., "Friday, 12 September"
     return formatter.string(from: date)
 }
 

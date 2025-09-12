@@ -17,90 +17,124 @@ struct TranscriptsListView: View {
 
     var body: some View {
         NavigationSplitView {
-            List(selection: $selectedTranscript) {
-                ForEach(groupTranscriptsByMonth(transcripts: transcripts), id: \.id) { monthSection in
-                    DisclosureGroup(
-                        monthSection.displayName,
-                        isExpanded: Binding(
-                            get: { expandedMonths.contains(monthSection.id) },
-                            set: { isExpanded in
-                                if isExpanded {
-                                    expandedMonths.insert(monthSection.id)
-                                } else {
-                                    expandedMonths.remove(monthSection.id)
-                                }
-                            }
-                        )
-                    ) {
-                        ForEach(monthSection.days, id: \.self) { day in
-                            let transcriptsForDay = groupedTranscripts[day] ?? []
-                            let dayString = day.formatted(date: .abbreviated, time: .omitted)
-                            let dayId = day.formatted(date: .complete, time: .omitted)
-                            
-                            DisclosureGroup(
-                                dayString,
-                                isExpanded: Binding(
-                                    get: { expandedDays.contains(dayId) },
-                                    set: { isExpanded in
-                                        if isExpanded {
-                                            expandedDays.insert(dayId)
-                                        } else {
-                                            expandedDays.remove(dayId)
-                                        }
-                                    }
-                                )
-                            ) {
-                                ForEach(transcriptsForDay) { transcript in
-                                    VStack(alignment: .leading, spacing: 4) {
-                                        Text(transcript.title)
-                                            .font(.headline)
-                                            .lineLimit(1)
-                                        Text(transcript.createdAt.formatted(date: .omitted, time: .shortened))
-                                            .font(.caption)
-                                            .foregroundColor(.gray)
-                                    }
-                                    .padding(.vertical, 4)
-                                    .tag(transcript)
-                                    .swipeActions(edge: .trailing) {
-                                        Button("Delete", role: .destructive) {
-                                            deleteTranscript(transcript)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-            .navigationTitle("Transcripts")
-            .toolbar {
-                // Testing button - remove this in production
-                Button("Add Test Data") {
-                    Task {
-                        await addMockTranscriptsForTesting()
-                    }
-                }
-            }
-            .onAppear {
-                // Auto-expand the most recent month and day
-                let monthSections = groupTranscriptsByMonth(transcripts: transcripts)
-                if let mostRecentMonth = monthSections.first {
-                    expandedMonths.insert(mostRecentMonth.id)
-                    
-                    // Also expand the most recent day in that month
-                    if let mostRecentDay = mostRecentMonth.days.first {
-                        let dayId = mostRecentDay.formatted(date: .complete, time: .omitted)
-                        expandedDays.insert(dayId)
-                    }
-                }
-            }
+            transcriptsList
         } detail: {
-            Group {
-                if let transcript = selectedTranscript {
-                    TranscriptDetailView(transcript: transcript, onDelete: { deleteTranscript(selectedTranscript) })
-                } else {
-                    ContentUnavailableView("Select a Transcript", systemImage: "note.text")
+            detailView
+        }
+    }
+    
+    private var transcriptsList: some View {
+        List(selection: $selectedTranscript) {
+            ForEach(groupTranscriptsByMonth(transcripts: transcripts), id: \.id) { monthSection in
+                monthSectionView(monthSection)
+            }
+        }
+        .navigationTitle("Transcripts")
+        .toolbar {
+            // Testing button - remove this in production
+            Button("Add Test Data") {
+                Task {
+                    await addMockTranscriptsForTesting()
                 }
+            }
+        }
+        .onAppear {
+            expandMostRecentSections()
+        }
+    }
+    
+    private var detailView: some View {
+        Group {
+            if let transcript = selectedTranscript {
+                TranscriptDetailView(transcript: transcript, onDelete: { deleteTranscript(selectedTranscript) })
+            } else {
+                ContentUnavailableView("Select a Transcript", systemImage: "note.text")
+            }
+        }
+    }
+    
+    private func monthSectionView(_ monthSection: TranscriptMonthSection) -> some View {
+        DisclosureGroup(
+            monthSection.displayName,
+            isExpanded: monthBinding(for: monthSection.id)
+        ) {
+            ForEach(monthSection.days, id: \.self) { day in
+                daySectionView(day: day)
+            }
+        }
+    }
+    
+    private func daySectionView(day: Date) -> some View {
+        let transcriptsForDay = groupedTranscripts[day] ?? []
+        let dayFormatter = DateFormatter()
+        dayFormatter.dateFormat = "EEEE, d MMMM" // e.g., "Friday, 12 September"
+        let dayString = dayFormatter.string(from: day)
+        let dayId = day.formatted(date: .complete, time: .omitted)
+        
+        return DisclosureGroup(
+            dayString,
+            isExpanded: dayBinding(for: dayId)
+        ) {
+            ForEach(transcriptsForDay) { transcript in
+                transcriptRowView(transcript)
+            }
+        }
+    }
+    
+    private func transcriptRowView(_ transcript: Transcript) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(transcript.title)
+                .font(.headline)
+                .lineLimit(1)
+            Text(transcript.createdAt.formatted(date: .omitted, time: .shortened))
+                .font(.caption)
+                .foregroundColor(.gray)
+        }
+        .padding(.vertical, 4)
+        .tag(transcript)
+        .swipeActions(edge: .trailing) {
+            Button("Delete", role: .destructive) {
+                deleteTranscript(transcript)
+            }
+        }
+    }
+    
+    private func monthBinding(for monthId: String) -> Binding<Bool> {
+        Binding(
+            get: { expandedMonths.contains(monthId) },
+            set: { isExpanded in
+                if isExpanded {
+                    expandedMonths.insert(monthId)
+                } else {
+                    expandedMonths.remove(monthId)
+                }
+            }
+        )
+    }
+    
+    private func dayBinding(for dayId: String) -> Binding<Bool> {
+        Binding(
+            get: { expandedDays.contains(dayId) },
+            set: { isExpanded in
+                if isExpanded {
+                    expandedDays.insert(dayId)
+                } else {
+                    expandedDays.remove(dayId)
+                }
+            }
+        )
+    }
+    
+    private func expandMostRecentSections() {
+        // Auto-expand the most recent month and day
+        let monthSections = groupTranscriptsByMonth(transcripts: transcripts)
+        if let mostRecentMonth = monthSections.first {
+            expandedMonths.insert(mostRecentMonth.id)
+            
+            // Also expand the most recent day in that month
+            if let mostRecentDay = mostRecentMonth.days.first {
+                let dayId = mostRecentDay.formatted(date: .complete, time: .omitted)
+                expandedDays.insert(dayId)
             }
         }
     }

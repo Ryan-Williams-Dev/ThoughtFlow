@@ -141,7 +141,6 @@ class RecordViewModel: ObservableObject {
             await MainActor.run {
                 self.isProcessing = false
                 self.isSuccess = true
-                self.triggerHapticFeedback(.success)
             }
 
             // Auto-hide success state after 2 seconds
@@ -160,21 +159,6 @@ class RecordViewModel: ObservableObject {
     }
 
     // MARK: - Helpers
-    
-    /// Types of haptic feedback available
-    private enum HapticType {
-        case success, error
-    }
-    
-    /// Trigger haptic feedback for successful completion
-    private func triggerHapticFeedback(_ type: HapticType) {
-        // Only trigger haptic for success (completion)
-        if case .success = type {
-            let generator = UINotificationFeedbackGenerator()
-            generator.prepare()
-            generator.notificationOccurred(.success)
-        }
-    }
     
     // MARK: - Model Loading
     

@@ -15,16 +15,15 @@ enum Tabs {
     case search
 }
 
-import SwiftData
-import SwiftUI
-
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
     @EnvironmentObject private var audioRecorder: AudioRecorder
     @EnvironmentObject private var transcriptionService: TranscriptionService
+    @StateObject private var userDefaults = UserDefaultsManager.shared
 
     @State var selectedTab: Tabs = .home
     @State var searchText: String = ""
+    @Binding var isAuthenticated: Bool
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -44,10 +43,6 @@ struct ContentView: View {
             Tab("Settings", systemImage: "gear", value: Tabs.settings) {
                 SettingsView()
             }
-            
-            Tab(value: Tabs.search, role: .search) {
-                TranscriptsListView()
-            }
         }
         .tabViewBottomAccessory {
             RecordButton(
@@ -63,7 +58,7 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    ContentView(isAuthenticated: .constant(true))
         .modelContainer(for: Transcript.self, inMemory: true)
         .environmentObject(AudioRecorder())
         .environmentObject(TranscriptionService())
