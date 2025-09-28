@@ -18,7 +18,7 @@ struct SetupView: View {
             // App Icon/Logo
             Image(systemName: "waveform.circle.fill")
                 .font(.system(size: 80))
-                .foregroundStyle(.blue)
+                .foregroundStyle(.brandPrimary)
             
             VStack(spacing: 16) {
                 Text("ThoughtFlow")

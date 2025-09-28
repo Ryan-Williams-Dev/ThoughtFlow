@@ -55,12 +55,13 @@ struct InsightsListView: View {
                     if day.text != nil {
                         // Show insights if they exist
                         InsightsDetailView(insights: day, insightsService: vm.insightsService as? InsightsService)
+                            .toolbar(.hidden, for: .tabBar)
                     } else {
                         // Show generate button if no insights exist
                         VStack(spacing: 20) {
                             Image(systemName: "brain.head.profile")
                                 .font(.system(size: 60))
-                                .foregroundColor(.blue)
+                                .foregroundColor(.brandPrimary)
                             
                             Text("Generate Insights")
                                 .font(.title2)
@@ -82,15 +83,14 @@ struct InsightsListView: View {
                                             .scaleEffect(0.8)
                                     }
                                     Text(vm.isGeneratingInsightsForDate(day.date) ? "Generating..." : "Generate Insights")
+                                        .font(.headline)
+                                        .padding()
+                                        .frame(maxWidth: .infinity)
                                 }
-                                .frame(maxWidth: .infinity)
-                                .padding()
-                                .background(Color.blue)
-                                .foregroundColor(.white)
-                                .cornerRadius(10)
                             }
                             .disabled(vm.isGeneratingInsights)
                             .padding(.horizontal)
+                            .buttonStyle(.glassProminent)
                             
                             Spacer()
                         }

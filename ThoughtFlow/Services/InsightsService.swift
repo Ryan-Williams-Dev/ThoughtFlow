@@ -99,24 +99,6 @@ class InsightsService: InsightServiceProtocol {
             throw error
         }
     }
-    
-    // MARK: - RTF Helper
-    func convertRTFToAttributedString(_ rtfString: String) -> AttributedString? {
-        guard let rtfData = rtfString.data(using: .utf8) else { return nil }
-        
-        do {
-            // Convert RTF to NSAttributedString first, then to AttributedString
-            let nsAttributedString = try NSAttributedString(
-                data: rtfData,
-                options: [.documentType: NSAttributedString.DocumentType.rtf],
-                documentAttributes: nil
-            )
-            return AttributedString(nsAttributedString)
-        } catch {
-            print("Error converting RTF to AttributedString: \(error)")
-            return nil
-        }
-    }
 }
 
 // MARK: - Request/Response Models

@@ -48,20 +48,20 @@ struct RecordButton: View {
         if vm.modelLoadingError != nil { return .red }
         if vm.isModelLoading { return .orange }
         if !vm.isModelLoaded { return .orange }
-        if vm.isRecording { return .red }
-        if vm.isProcessing { return .blue }
-        if vm.isSuccess { return .green }
+        if vm.isRecording { return .recording }
+        if vm.isProcessing { return .processing }
+        if vm.isSuccess { return .success }
         return .primary.opacity(0.7)
     }
 
     private var backgroundColor: Color {
-        if vm.modelLoadingError != nil { return Color.red.opacity(0.15) }
-        if vm.isModelLoading { return Color.orange.opacity(0.15) }
-        if !vm.isModelLoaded { return Color.orange.opacity(0.15) }
-        if vm.isRecording { return Color.red.opacity(0.15) }
-        if vm.isProcessing { return Color.blue.opacity(0.15) }
-        if vm.isSuccess { return Color.green.opacity(0.15) }
-        return .clear
+        if vm.modelLoadingError != nil { return .red.opacity(0.5) }
+        if vm.isModelLoading { return Color.orange.opacity(0.5) }
+        if !vm.isModelLoaded { return Color.orange.opacity(0.5) }
+        if vm.isRecording { return .recording.opacity(0.5) }
+        if vm.isProcessing { return .processing.opacity(0.5) }
+        if vm.isSuccess { return .success.opacity(0.5) }
+        return .brandPrimary.opacity(0.5)
     }
 
     private var buttonText: String {

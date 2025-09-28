@@ -18,10 +18,10 @@ struct LockScreenView: View {
             // App Logo/Icon
             Image(systemName: "lock.shield")
                 .font(.system(size: 80))
-                .foregroundColor(.blue)
+                .foregroundColor(.brandPrimary)
             
             VStack(spacing: 16) {
-                Text("ThoughtFlow")
+                Text("Echo")
                     .font(.largeTitle)
                     .fontWeight(.bold)
                 
@@ -52,10 +52,10 @@ struct LockScreenView: View {
                     .font(.headline)
                     .padding()
                     .frame(maxWidth: .infinity)
-                    .glassEffect()
                 }
-                .padding(.horizontal, 40)
+                .buttonStyle(.glassProminent)
             }
+            .padding(.horizontal, 40)
             
             Spacer()
         }

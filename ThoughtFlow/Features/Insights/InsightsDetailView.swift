@@ -72,7 +72,6 @@ struct InsightsDetailView: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
             }
-            .background(Color(.systemGroupedBackground))
         }
 }
 
